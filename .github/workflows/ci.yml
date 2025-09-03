@@ -1,0 +1,145 @@
+
+Copilot navigation
+Quick links
+New chat
+Spaces
+Preview
+No conversations yet
+Ask Copilot anything on the right to start your first conversation.
+
+
+Kaden-G
+
+Install Copilot in your favorite code editor
+Copilot is available for a multitude of editors to fit your needs
+
+Copilot Chat
+ci.yml
+How can I help you?
+
+Space
+Sample prompts to try
+
+Create issue
+
+Write code
+
+Git
+
+Issues
+
+Pull requests
+Copilot uses AI. Check for mistakes.
+Workbench
+
+
+.github/workflows/ci.yml
+Press Delete to close.
+52 lines · 1 KB
+
+.github/workflows/ci.yml file contents
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quick-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tiny deps for checks
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Validate docker-compose syntax
+        run: |
+          python - <<'PY'
+          import yaml
+          with open("Parallel_MLinference/docker-compose.yml") as f:
+              yaml.safe_load(f)  # fails on invalid YAML
+          print("docker-compose.yml parsed OK")
+          PY
+
+      - name: Smoke test infer.py
+        run: |
+          mkdir -p /tmp/mvp && cd /tmp/mvp
+          cat > in.json <<'EOF'
+          {"id":"ci_sample","value":1}
+          EOF
+          python "${{ github.workspace }}/Parallel_MLinference/scripts/infer.py" --input in.json --output out.json
+          python - <<'PY'
+          import json
+          data = json.load(open("out.json"))
+          assert "doubled" in data, "Missing inference keys"
+          print("Inference OK:", data)
+          PY
+
+      - name: Check Slurm assets exist
+        run: |
+          test -f Parallel_MLinference/slurm/job_array.sbatch
+          test -d Parallel_MLinference/data/inputs
+          test -d Parallel_MLinference/data/outputs
+          echo "Slurm job and data directories present"
+Kaden-G/special-octo-goggles/.github/workflows/ci.yml
