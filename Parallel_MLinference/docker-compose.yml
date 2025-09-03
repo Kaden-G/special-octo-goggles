@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  slurmctld:
+    image: giovtorres/docker-centos7-slurm:latest
+    container_name: slurmctld
+    hostname: slurmctld
+    privileged: true
+    tty: true
+    volumes:
+      - ./:/shared
+    ports:
+      - "6817:6817"
+      - "6818:6818"
+    command: >
+      bash -lc "service munge start && service slurmctld start &&
+                tail -f /var/log/slurm/slurmctld.log"
+  slurmd01:
+    image: giovtorres/docker-centos7-slurm:latest
+    container_name: slurmd01
+    hostname: slurmd01
+    privileged: true
+    tty: true
+    volumes:
+      - ./:/shared
+    depends_on:
+      - slurmctld
+    command: >
+      bash -lc "service munge start && service slurmd start &&
+                tail -f /var/log/slurm/slurmd.log"
+  slurmd02:
+    image: giovtorres/docker-centos7-slurm:latest
+    container_name: slurmd02
+    hostname: slurmd02
+    privileged: true
+    tty: true
+    volumes:
+      - ./:/shared
+    depends_on:
+      - slurmctld
+    command: >
+      bash -lc "service munge start && service slurmd start &&
+                tail -f /var/log/slurm/slurmd.log"
